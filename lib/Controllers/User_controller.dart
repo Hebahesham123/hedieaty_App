@@ -90,4 +90,22 @@ class UserController {
     }
     return null;
   }
+
+
+  // Get Current User Profile
+  Future<User?> getCurrentUserProfile() async {
+    try {
+      // Get the currently signed-in user's UID
+      String? uid = _auth.currentUser?.uid;
+
+      if (uid != null) {
+        // Fetch the user profile
+        return await _userModel.getCurrentUserProfile(uid);
+      }
+    } catch (e) {
+      print("Error fetching user profile: $e");
+      throw Exception("Failed to fetch user profile");
+    }
+    return null;
+  }
 }

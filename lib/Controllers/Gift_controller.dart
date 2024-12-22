@@ -106,4 +106,9 @@ class GiftController {
       print("Gift with ID $giftId unpublished.");
     }
   }
+
+  Future<List<Gift>> fetchPledgedGiftsByUser(String userId) async {
+    return await _giftModel.fetchPledgedGiftsByUser(userId);
+  }
+
 }

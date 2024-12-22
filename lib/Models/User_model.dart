@@ -40,4 +40,21 @@ class UserModel {
     }
     return null;
   }
+
+  // Fetch Current User Profile
+  Future<User?> getCurrentUserProfile(String uid) async {
+    // Attempt to fetch user from local SQLite
+    User? user = await getFromLocal(uid);
+    if (user != null) {
+      return user;
+    }
+
+    // If not found locally, fetch from Firestore
+    user = await getFromRemote(uid);
+    if (user != null) {
+      // Save the fetched user to local SQLite
+      await saveToLocal(user);
+    }
+    return user;
+  }
 }

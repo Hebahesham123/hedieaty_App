@@ -100,4 +100,14 @@ class GiftModel {
 
     return null; // Return null if no matching gift is found
   }
+  Future<List<Gift>> fetchPledgedGiftsByUser(String userId) async {
+    final db = await  _dbHelper.database;
+    final List<Map<String, dynamic>> results = await db.query(
+      'Gifts',
+      where: 'pledgedBy = ?',
+      whereArgs: [userId],
+    );
+
+    return results.map((map) => Gift.fromMap(map)).toList();
+  }
 }

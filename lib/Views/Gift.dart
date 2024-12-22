@@ -12,6 +12,35 @@ class GiftManagementScreen extends StatefulWidget {
 }
 
 class _GiftManagementScreenState extends State<GiftManagementScreen> {
+  String _currentSortOption = 'name'; // Default sorting option
+
+  void _sortGifts(String option) {
+    setState(() {
+      _currentSortOption = option;
+
+      _gifts.sort((a, b) {
+        switch (option) {
+          case 'name':
+            final nameA = a.name ?? '';
+            final nameB = b.name ?? '';
+            return nameA.compareTo(nameB);
+          case 'category':
+            final categoryA = a.category ?? '';
+            final categoryB = b.category ?? '';
+            return categoryA.compareTo(categoryB);
+          case 'status':
+            final statusOrder = ['available', 'pledged', 'purchased'];
+            final statusA = statusOrder.indexOf(a.status ?? '');
+            final statusB = statusOrder.indexOf(b.status ?? '');
+            return statusA.compareTo(statusB);
+          default:
+            return 0;
+        }
+      });
+    });
+  }
+
+
   final GiftController _controller = GiftController();
   List<Gift> _gifts = [];
   final _formKey = GlobalKey<FormState>();
@@ -198,6 +227,31 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
       appBar: AppBar(
         title: Text("Manage Gifts"),
         actions: [
+          DropdownButton<String>(
+            value: _currentSortOption,
+            onChanged: (value) {
+              if (value != null) {
+                _sortGifts(value);
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: 'name',
+                child: Text("Sort by Name"),
+              ),
+              DropdownMenuItem(
+                value: 'category',
+                child: Text("Sort by Category"),
+              ),
+              DropdownMenuItem(
+                value: 'status',
+                child: Text("Sort by Status"),
+              ),
+            ],
+            icon: Icon(Icons.sort, color: Colors.white),
+            underline: Container(), // Remove default underline
+            dropdownColor: Colors.blueGrey, // Dropdown background color
+          ),
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => _showGiftDialog(),

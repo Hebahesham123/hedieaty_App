@@ -16,6 +16,37 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
   List<Event> _events = [];
   final _formKey = GlobalKey<FormState>();
 
+  String _currentSortOption = 'status'; // Default sorting by status
+
+  void _sortEvents(String option) {
+    setState(() {
+      _currentSortOption = option;
+
+      _events.sort((a, b) {
+        switch (option) {
+          case 'name':
+            final nameA = a.name ?? '';
+            final nameB = b.name ?? '';
+            return nameA.compareTo(nameB);
+          case 'category':
+            final categoryA = a.category ?? '';
+            final categoryB = b.category ?? '';
+            return categoryA.compareTo(categoryB);
+          case 'status':
+            final statusComparison = _getEventStatus(a).compareTo(_getEventStatus(b));
+            if (statusComparison != 0) return statusComparison;
+
+            // Secondary sorting by name
+            final nameA = a.name ?? '';
+            final nameB = b.name ?? '';
+            return nameA.compareTo(nameB);
+          default:
+            return 0;
+        }
+      });
+    });
+  }
+
 
   @override
   void initState()  {
@@ -26,10 +57,50 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
   Future<void> _loadEvents() async {
     await _syncEvents();
     final events = await _controller.fetchEvents(widget.userId!);
+
+    // Sort by status, then category, then name
+    events.sort((a, b) {
+      // Sort by status: Upcoming -> Current -> Past
+      final statusComparison = _getEventStatus(a).compareTo(_getEventStatus(b));
+      if (statusComparison != 0) return statusComparison;
+
+      // Sort by category (handle nulls with an empty string)
+      final categoryA = a.category ?? '';
+      final categoryB = b.category ?? '';
+      final categoryComparison = categoryA.compareTo(categoryB);
+      if (categoryComparison != 0) return categoryComparison;
+
+      // Sort by name (handle nulls with an empty string)
+      final nameA = a.name ?? '';
+      final nameB = b.name ?? '';
+      return nameA.compareTo(nameB);
+    });
+
     setState(() {
       _events = events;
     });
   }
+
+
+  int _getEventStatus(Event event) {
+    final currentDate = DateTime.now();
+    final eventDate = event.date != null ? DateTime.tryParse(event.date!) : null;
+
+    if (eventDate == null) {
+      // Treat events with invalid or null dates as "Past"
+      return 2;
+    }
+
+    if (eventDate.isBefore(currentDate)) {
+      return 2; // Past
+    } else if (eventDate.isAfter(currentDate)) {
+      return 0; // Upcoming
+    } else {
+      return 1; // Current
+    }
+  }
+
+
 
   Future<void> _syncEvents() async {
     await _controller.syncEvents(widget.userId!);
@@ -165,6 +236,31 @@ class _EventManagementScreenState extends State<EventManagementScreen> {
       appBar: AppBar(
         title: Text("Event Management"),
         actions: [
+          DropdownButton<String>(
+            value: _currentSortOption,
+            onChanged: (value) {
+              if (value != null) {
+                _sortEvents(value);
+              }
+            },
+            items: [
+              DropdownMenuItem(
+                value: 'name',
+                child: Text("Sort by Name"),
+              ),
+              DropdownMenuItem(
+                value: 'category',
+                child: Text("Sort by Category"),
+              ),
+              DropdownMenuItem(
+                value: 'status',
+                child: Text("Sort by Status"),
+              ),
+            ],
+            icon: Icon(Icons.sort, color: Colors.white),
+            dropdownColor: Colors.blueGrey,
+            underline: Container(),
+          ),
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () => _showEventDialog(),

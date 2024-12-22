@@ -19,16 +19,12 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     print(dbPath);
-    final path = join(dbPath, 'hzzh.db');
+    final path = join(dbPath, 'mmxx.db');
 
     return await openDatabase(
       path,
       version: 1,
       onCreate: _onCreate,
-      onOpen: (db) async {
-        // Enable foreign key constraints
-        await db.execute('PRAGMA foreign_keys = ON;');
-      },
     );
   }
 
@@ -70,6 +66,7 @@ class DatabaseHelper {
       event_id Text NOT NULL,
       firestoreId Text,
       imageLink Text,
+      pledgedBy Text,
       FOREIGN KEY (event_id) REFERENCES Events (id) ON DELETE CASCADE
     );
   ''');

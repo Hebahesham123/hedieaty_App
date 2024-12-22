@@ -44,14 +44,37 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
     _loadGifts();
   }
 
+  Future<void> _updateGiftStatus(String giftId, String newStatus) async {
+    final gift = _gifts.firstWhere((gift) => gift.id == giftId);
+    final updatedGift = Gift(
+      id: gift.id,
+      name: gift.name,
+      description: gift.description,
+      category: gift.category,
+      price: gift.price,
+      status: newStatus,
+      published: gift.published,
+      eventId: gift.eventId,
+      imageLink: gift.imageLink,
+      pledgedBy: gift.pledgedBy
+    );
+
+    await _controller.updateGift(updatedGift);
+    _loadGifts();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Gift status updated to $newStatus.")),
+    );
+  }
+
   Future<void> _showGiftDialog([Gift? gift]) async {
     final nameController = TextEditingController(text: gift?.name ?? '');
     final descriptionController =
     TextEditingController(text: gift?.description ?? '');
     final categoryController =
     TextEditingController(text: gift?.category ?? '');
-    final priceController = TextEditingController(
-        text: gift != null ? gift.price.toString() : '');
+    final priceController =
+    TextEditingController(text: gift != null ? gift.price.toString() : '');
     final statusController =
     TextEditingController(text: gift?.status ?? 'available');
     final imageLinkController =
@@ -179,6 +202,10 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
             icon: Icon(Icons.add),
             onPressed: () => _showGiftDialog(),
           ),
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () => _loadGifts(),
+          ),
         ],
       ),
       body: ListView.builder(
@@ -188,7 +215,7 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
           return Card(
             margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
             child: ListTile(
-              leading: gift.imageLink != null
+              leading: gift.imageLink != null && gift.imageLink!.isNotEmpty
                   ? Image.network(
                 '${gift.imageLink!}',
                 width: 50,
@@ -203,7 +230,23 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
               subtitle: Text(
                 "Category: ${gift.category} | Price: \$${gift.price.toStringAsFixed(2)} | Status: ${gift.status}",
               ),
-              trailing: Row(
+              trailing: gift.status == 'pledged'
+                  ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _updateGiftStatus(gift.id!, 'purchased'),
+                    child: Text("Accept"),
+                  ),
+                  SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () => _updateGiftStatus(gift.id!, 'available'),
+                    child: Text("Reject"),
+                    style: ElevatedButton.styleFrom(iconColor: Colors.red),
+                  ),
+                ],
+              )
+                  : Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
@@ -228,5 +271,4 @@ class _GiftManagementScreenState extends State<GiftManagementScreen> {
       ),
     );
   }
-
 }

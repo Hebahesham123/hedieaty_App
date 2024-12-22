@@ -8,6 +8,8 @@ class Gift {
   final bool published;
   final String eventId; // Foreign key referencing Events table
   final String? imageLink;
+  final String? pledgedBy; // New field
+
 
   Gift({
     this.id,
@@ -19,6 +21,7 @@ class Gift {
     this.published = false,
     required this.eventId,
     this.imageLink,
+    this.pledgedBy,
   });
 
   // Convert Gift to Map for SQLite
@@ -33,6 +36,7 @@ class Gift {
       'published': published ? 1 : 0,
       'event_id': eventId,
       'imageLink': imageLink,
+      'pledgedBy': pledgedBy, // Include the new field
     };
   }
 
@@ -48,6 +52,7 @@ class Gift {
       published: map['published'] == 1,
       eventId: map['event_id'],
       imageLink: map['imageLink'],
+      pledgedBy: map['pledgedBy'], // Parse the new field
     );
   }
 }

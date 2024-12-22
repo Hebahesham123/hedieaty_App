@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hediaty_appp/Controllers/Event_controller.dart';
 import 'package:hediaty_appp/Classes/Event.dart';
+import 'package:hediaty_appp/Views/GiftListScreen.dart';
 
 class FriendEventsScreen extends StatefulWidget {
   final String friendId;
@@ -23,11 +24,18 @@ class _FriendEventsScreenState extends State<FriendEventsScreen> {
   }
 
   Future<void> _loadFriendEvents() async {
+    await _syncEvents();
     final events = await _controller.fetchEvents(widget.friendId);
     setState(() {
       _events = events;
     });
   }
+
+  Future<void> _syncEvents() async {
+    await _controller.syncEvents(widget.friendId);
+    print("Events synchronized successfully!");
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +57,18 @@ class _FriendEventsScreenState extends State<FriendEventsScreen> {
             child: ListTile(
               title: Text(event.name),
               subtitle: Text("Date: ${event.date} | Location: ${event.location}"),
+              onTap: () {
+                // Navigate to GiftListScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => GiftListScreen(
+                      eventId: event.id,
+                      eventName: event.name,
+                    ),
+                  ),
+                );
+              },
             ),
           );
         },
